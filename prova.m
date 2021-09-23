@@ -98,41 +98,44 @@ matrix=RSSI(60,n,dist,mu,sigma);
 imagesc(matrix);
 %% prova
 computeDist=@(A,RSSI,n) 2^((A-RSSI)/(10*n));
-RSSI=@(A,n,d) A-(10*n*log2(d)); %normrnd(n,0.5)
-n=2;
+RSSI=@(A,n,sigma,d) A-(10*normrnd(n,sigma)*log2(d)); %normrnd(n,0.5)
 x=0:0.01:10;
 y=0:0.01:5;
-A=60;
+sigma=0.3;
+n=2;A=60;
+%n_r=[2,2];
+n_r=[1.4,2.5];
+c_1=[1,1];c_2=[1,4.5];c_3=[9,3];
+
+
+
 figure();
-c_1=[1,1];
 dist_X=-ones(size(y'))*(c_1(1)-x);
 dist_Y=(c_1(2)-y')*ones(size(x));
 dist_1=sqrt(dist_X.^2+dist_Y.^2);
-m_1=RSSI(60,n,dist_1);
+m_1=RSSI(60,n,sigma,dist_1);
 imagesc(m_1);
 xticks(0:100:1000);xticklabels([0:1:10]);yticks(0:100:500);yticklabels([0:1:5]);
 clear dist_X dist_Y
 
 figure();
-c_2=[1,4.5];
 dist_X=-ones(size(y'))*(c_2(1)-x);
 dist_Y=(c_2(2)-y')*ones(size(x));
 dist_2=sqrt(dist_X.^2+dist_Y.^2);
-m_2=RSSI(60,n,dist_2);
+m_2=RSSI(60,n,sigma,dist_2);
 imagesc(m_2);
 xticks(0:100:1000);xticklabels([0:1:10]);yticks(0:100:500);yticklabels([0:1:5]);
 clear dist_X dist_Y
 
 figure();
-c_3=[9,3];
 dist_X=-ones(size(y'))*(c_3(1)-x);
 dist_Y=(c_3(2)-y')*ones(size(x));
 dist_3=sqrt(dist_X.^2+dist_Y.^2);
-m_3=RSSI(60,n,dist_3);
+m_3=RSSI(60,n,sigma,dist_3);
 imagesc(m_3);
 xticks(0:100:1000);xticklabels([0:1:10]);yticks(0:100:500);yticklabels([0:1:5]);
 clear dist_X dist_Y
-n_r=[2,2];%n_r=[1.4,2.5];
+
 pos=[4,2];
 iPos(1)=find(x==pos(1));
 iPos(2)=find(y==pos(2));
@@ -140,6 +143,22 @@ RSSI_1=m_1(iPos(2),iPos(1));d11=computeDist(A,RSSI_1,n_r(1));d12=computeDist(A,R
 RSSI_2=m_2(iPos(2),iPos(1));d21=computeDist(A,RSSI_2,n_r(1));d22=computeDist(A,RSSI_2,n_r(2));
 RSSI_3=m_3(iPos(2),iPos(1));d31=computeDist(A,RSSI_3,n_r(1));d32=computeDist(A,RSSI_3,n_r(2));
 
+<<<<<<< Updated upstream
 s = 1;
 
+=======
+figure();
+>>>>>>> Stashed changes
 dist_prova=sqrt((pos(1)-c_3(1)).^2+(pos(2)-c_3(2)).^2);
+hold on;
+[xout,yout] = circcirc(c_1(1),c_1(2),d12,c_2(1),c_2(2),d22);
+xCenter = c_1(2);
+yCenter = c_1(1);
+theta = 0 : 0.01 : 2*pi;
+radius = d12;
+x = radius * cos(theta) + xCenter;
+y = radius * sin(theta) + yCenter;
+imagesc(m_3);hold on;
+plot(x, y, 'r-', 'LineWidth', 3);
+
+
