@@ -98,13 +98,18 @@ matrix=RSSI(60,n,dist,mu,sigma);
 imagesc(matrix);
 %% prova
 computeDist=@(A,RSSI,n) 2^((A-RSSI)/(10*n));
-RSSI=@(A,n,sigma,d) A-(10*normrnd(n,sigma)*log2(d)); %normrnd(n,0.5)
+nprop = normrnd(n,sigma);
+RSSI=@(A,n,sigma,d) A-(10*nprop*log2(d)); %normrnd(n,0.5)
 x=0:0.01:10;
 y=0:0.01:5;
 sigma=0.3;
 n=2;A=60;
 %n_r=[2,2];
+<<<<<<< Updated upstream
 n_r=[1.4,n];
+=======
+n_r=[1.4,nprop];
+>>>>>>> Stashed changes
 c_1=[1,1];c_2=[1,4.5];c_3=[9,3];
 
 
@@ -143,8 +148,11 @@ RSSI_1=m_1(iPos(2),iPos(1));d11=computeDist(A,RSSI_1,n_r(2));d12=computeDist(A,R
 RSSI_2=m_2(iPos(2),iPos(1));d21=computeDist(A,RSSI_2,n_r(2));d22=computeDist(A,RSSI_2,n_r(1));
 RSSI_3=m_3(iPos(2),iPos(1));d31=computeDist(A,RSSI_3,n_r(2));d32=computeDist(A,RSSI_3,n_r(1));
 
+%<<<<<<< Updated upstream\
+% Intersezione c_1 con c_2
 dist_prova=sqrt((pos(1)-c_3(1)).^2+(pos(2)-c_3(2)).^2);
 hold on;
+<<<<<<< Updated upstream
 [x12_1,y12_1] = circcirc(c_1(2),c_1(1),d11,c_2(2),c_2(1),d22);
 [x12_2,y12_2] = circcirc(c_1(2),c_1(1),d11,c_3(2),c_3(1),d32);
 [x13_1,y13_1] = circcirc(c_3(2),c_3(1),d31,c_2(2),c_2(1),d22);
@@ -188,6 +196,31 @@ hold on;
 %yticklabels([5:1:0]);
 
 %{
+=======
+[xout_1,yout_1] = circcirc(c_1(1),c_1(2),d11,c_2(1),c_2(2),d22);
+[xout_2,yout_2] = circcirc(c_1(1),c_1(2),d11,c_3(1),c_3(2),d32);
+[xout_3,yout_3] = circcirc(c_3(1),c_3(2),d31,c_2(1),c_2(2),d22);
+[xout_4,yout_4] = circcirc(c_3(1),c_3(2),d31,c_1(1),c_1(2),d12);
+[xout_5,yout_5] = circcirc(c_2(1),c_2(2),d21,c_1(1),c_1(2),d12);
+[xout_6,yout_6] = circcirc(c_2(1),c_2(2),d21,c_3(1),c_3(2),d32);
+
+xCenter = c_1(2);
+yCenter = c_1(1);
+theta = 0 : 0.01 : 2*pi;
+radius = d12;
+x = radius * cos(theta) + xCenter;
+y = radius * sin(theta) + yCenter;
+imagesc(m_3);hold on;
+plot(x, y, 'r-', 'LineWidth', 3);
+
+
+
+dist_prova=sqrt((pos(1)-c_3(1)).^2+(pos(2)-c_3(2)).^2);
+
+% Intersezione c_1 con c_3
+
+[xout,yout] = circcirc(c_1(1),c_1(2),d12,c_3(1),c_3(2),d22);
+>>>>>>> Stashed changes
 xCenter = c_1(2);
 yCenter = c_1(1);
 theta = 0 : 0.01 : 2*pi;
@@ -198,4 +231,5 @@ imagesc(m_3);hold on;
 plot(x, y, 'r-', 'LineWidth', 3);
 %}
 
+%>>>>>>> Stashed changes
 
