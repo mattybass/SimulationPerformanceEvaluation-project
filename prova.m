@@ -143,12 +143,6 @@ RSSI_1=m_1(iPos(2),iPos(1));d11=computeDist(A,RSSI_1,n_r(1));d12=computeDist(A,R
 RSSI_2=m_2(iPos(2),iPos(1));d21=computeDist(A,RSSI_2,n_r(1));d22=computeDist(A,RSSI_2,n_r(2));
 RSSI_3=m_3(iPos(2),iPos(1));d31=computeDist(A,RSSI_3,n_r(1));d32=computeDist(A,RSSI_3,n_r(2));
 
-<<<<<<< Updated upstream
-s = 1;
-
-=======
-figure();
->>>>>>> Stashed changes
 dist_prova=sqrt((pos(1)-c_3(1)).^2+(pos(2)-c_3(2)).^2);
 hold on;
 [xout,yout] = circcirc(c_1(1),c_1(2),d12,c_2(1),c_2(2),d22);
