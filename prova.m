@@ -101,12 +101,12 @@ computeDist=@(A,RSSI,n) 2^((A-RSSI)/(10*n));
 RSSI=@(A,n,sigma,d) A-(10*normrnd(n,sigma)*log2(d)); %normrnd(n,0.5)
 x=0:0.01:10;
 y=0:0.01:5;
-sigma=0.3;
+sigma=0.1;
 n=2;A=60;
 %n_r=[2,2];
-n_r=[1.4,n];
+n_r=[1.9,2.1];
 c_1=[1,1];c_2=[1,4.5];c_3=[9,3];
-
+pos=[4,3];
 
 
 figure();
@@ -136,13 +136,13 @@ imagesc(m_3);
 xticks(0:100:1000);xticklabels([0:1:10]);yticks(0:100:500);yticklabels([0:1:5]);
 clear dist_X dist_Y
 
-pos=[4,2];
+
 iPos(1)=find(x==pos(1));
 iPos(2)=find(y==pos(2));
-RSSI_1=m_1(iPos(2),iPos(1));d11=computeDist(A,RSSI_1,n_r(2));d12=computeDist(A,RSSI_1,n_r(1));
-RSSI_2=m_2(iPos(2),iPos(1));d21=computeDist(A,RSSI_2,n_r(2));d22=computeDist(A,RSSI_2,n_r(1));
-RSSI_3=m_3(iPos(2),iPos(1));d31=computeDist(A,RSSI_3,n_r(2));d32=computeDist(A,RSSI_3,n_r(1));
-
+RSSI_1=m_1(iPos(2),iPos(1));d11=computeDist(A,RSSI_1,n_r(1));d12=computeDist(A,RSSI_1,n_r(2));
+RSSI_2=m_2(iPos(2),iPos(1));d21=computeDist(A,RSSI_2,n_r(1));d22=computeDist(A,RSSI_2,n_r(2));
+RSSI_3=m_3(iPos(2),iPos(1));d31=computeDist(A,RSSI_3,n_r(1));d32=computeDist(A,RSSI_3,n_r(2));
+%%
 dist_prova=sqrt((pos(1)-c_3(1)).^2+(pos(2)-c_3(2)).^2);
 hold on;
 [x12_1,y12_1] = circcirc(c_1(2),c_1(1),d11,c_2(2),c_2(1),d22);
@@ -172,17 +172,30 @@ imagesc(new_matrix);
 colormap(bone);
 xticks(0:100:1000);xticklabels([0:1:10]);yticks(0:100:500);yticklabels([0:1:5]);
 %}
+%%
 theta = 0 : 0.01 : 2*pi;
 
 figure();
-scatter(c_1(1),c_1(2));hold on;scatter(c_2(1),c_2(2));hold on;scatter(c_3(1),c_3(2));hold on;
-xlim([0,10]);ylim([0 5]);
+scatter(c_1(1),c_1(2),'r');hold on;scatter(c_2(1),c_2(2),'b');hold on;scatter(c_3(1),c_3(2),'g');hold on;scatter(pos(1),pos(2),'x');hold on;
+xlim([0,20]);ylim([0 10]);
 
 x_1 = d12 * cos(theta) + c_1(1);y_1 = d12 * sin(theta) + c_1(2);
-plot(x_1, y_1, 'r-', 'LineWidth', 1);
+plot(x_1, y_1, 'r', 'LineWidth', 1);
 hold on;
 x_1 = d11 * cos(theta) + c_1(1);y_1 = d11 * sin(theta) + c_1(2);
-plot(x_1, y_1, 'r-', 'LineWidth', 1);
+plot(x_1, y_1, 'r', 'LineWidth', 1);
+hold on;
+x_1 = d21 * cos(theta) + c_2(1);y_1 = d21 * sin(theta) + c_2(2);
+plot(x_1, y_1, 'b', 'LineWidth', 1);
+hold on;
+x_1 = d22 * cos(theta) + c_2(1);y_1 = d22 * sin(theta) + c_2(2);
+plot(x_1, y_1, 'b', 'LineWidth', 1);
+hold on;
+x_1 = d31 * cos(theta) + c_3(1);y_1 = d31 * sin(theta) + c_3(2);
+plot(x_1, y_1, 'g', 'LineWidth', 1);
+hold on;
+x_1 = d32 * cos(theta) + c_3(1);y_1 = d32 * sin(theta) + c_3(2);
+plot(x_1, y_1, 'g', 'LineWidth', 1);
 hold on;
 %xticklabels([0:1:10]);
 %yticklabels([5:1:0]);
