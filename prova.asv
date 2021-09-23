@@ -172,20 +172,9 @@ imagesc(new_matrix);
 colormap(bone);
 xticks(0:100:1000);xticklabels([0:1:10]);yticks(0:100:500);yticklabels([0:1:5]);
 %}
-theta = 0 : 0.01 : 2*pi;
-
 figure();
-scatter(c_1(1),c_1(2));hold on;scatter(c_2(1),c_2(2));hold on;scatter(c_3(1),c_3(2));hold on;
-xlim([0,10]);ylim([0 5]);
-
-x_1 = d12 * cos(theta) + c_1(1);y_1 = d12 * sin(theta) + c_1(2);
-plot(x_1, y_1, 'r-', 'LineWidth', 1);
-hold on;
-x_1 = d11 * cos(theta) + c_1(1);y_1 = d11 * sin(theta) + c_1(2);
-plot(x_1, y_1, 'r-', 'LineWidth', 1);
-hold on;
-%xticklabels([0:1:10]);
-%yticklabels([5:1:0]);
+scatter(c_1(2),c_1(1));hold on;scatter(c_2(2),c_2(1));hold on;scatter(c_3(2),c_3(1));
+xticks(0:100:1000);xticklabels([0:1:10]);yticks(0:100:500);yticklabels([0:1:5]);
 
 %{
 xCenter = c_1(2);
