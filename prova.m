@@ -1,4 +1,4 @@
- 
+clear 
 n=2;
 d=1;
 mu=0;
@@ -140,6 +140,6 @@ RSSI_1=m_1(iPos(2),iPos(1));d11=computeDist(A,RSSI_1,n_r(1));d12=computeDist(A,R
 RSSI_2=m_2(iPos(2),iPos(1));d21=computeDist(A,RSSI_2,n_r(1));d22=computeDist(A,RSSI_2,n_r(2));
 RSSI_3=m_3(iPos(2),iPos(1));d31=computeDist(A,RSSI_3,n_r(1));d32=computeDist(A,RSSI_3,n_r(2));
 
-l = 2;
+s = 1;
 
 dist_prova=sqrt((pos(1)-c_3(1)).^2+(pos(2)-c_3(2)).^2);
