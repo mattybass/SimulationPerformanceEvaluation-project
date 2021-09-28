@@ -58,10 +58,11 @@ end
 position_LSM = inv(A' * A)* A' * b ;
 iPos(1)=find(x==position_wanted(1));
 iPos(2)=find(y==position_wanted(2));
-%%
-beta=1;
-PSO_x=linspace(position_LSM(1)-beta,position_LSM(1)+beta,500);
-PSO_y=linspace(position_LSM(2)-beta,position_LSM(2)+beta,500);
+%% Uniform sampling
+beta=0.5;
+thick=1000;
+PSO_x=linspace(position_LSM(1)-beta,position_LSM(1)+beta,thick);
+PSO_y=linspace(position_LSM(2)-beta,position_LSM(2)+beta,thick);
 f_mat=zeros(size(PSO_x,2),size(PSO_y,2));
 for k=1:s
     for i=1:size(PSO_x,2)
@@ -73,8 +74,19 @@ end
 
 
 [x_index,y_index]=find(f_mat==min(f_mat,[],'all'));
-pos_final=[position_LSM(1)-beta+2*beta/500*x_index;position_LSM(2)-beta+2*beta/500*y_index];
+position_OPT=[position_LSM(1)-beta+2*beta/thick*x_index;position_LSM(2)-beta+2*beta/thick*y_index];
 
+%% PSO
+f_i=@(r_pos,b_pos,d) (d-norm(r_pos-b_pos))^2;
 
+fitness = @(x) f_i(x,beacon_pos(1,:),d(1))+ ...
+                 f_i(x,beacon_pos(2,:),d(2))+ ...
+                 f_i(x,beacon_pos(3,:),d(3))+ ...
+                 f_i(x,beacon_pos(4,:),d(4))+ ...
+                 f_i(x,beacon_pos(5,:),d(5));
+            
+%(d(k)-norm([PSO_x(i),PSO_y(j)]-beacon_pos(k,:)))^2;
 
-
+rng default  % For reproducibility
+nvars = 2;
+pos_PSO = particleswarm(fitness,nvars);
