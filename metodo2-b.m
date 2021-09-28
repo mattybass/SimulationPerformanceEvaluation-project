@@ -73,7 +73,7 @@ end
 
 
 [x_index,y_index]=find(f_mat==min(f_mat,[],'all'));
-pos_final=[position_LSM(1)-beta+2*beta/500*x_index;position_LSM(2)-beta+2*beta/500*y_index];
+position_OPT=[position_LSM(1)-beta+2*beta/500*x_index;position_LSM(2)-beta+2*beta/500*y_index];
 
 
 
