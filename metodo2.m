@@ -1,36 +1,25 @@
 clear 
-n=2;
-d=1;
-mu=0;
-sigma=0.3;
+mu=0;sigma=0.5;
 Gr=1;
 R=0.001;
 f=2.4;
-n_r = 2; 
 Pt=20;
-RSSI=@(A,n,sigma,d) A-10*n*log2(d) + normrnd(0,0.5);
+RSSI=@(A,n,sigma,d) A-10*n*log2(d) + normrnd(mu,sigma);
+
+%raylrnd(B)
+
 Pr=@(Pt,Gt,Gr,R,f) Pt+Gt+Gr-20*log10(R)-20*log2(f)-92.45;
 
 computeDist=@(A,RSSI,n) 2.^((A-RSSI)/(10*n));
 
 x=0:0.01:10;
 y=0:0.01:5;
-%{
-coord_X=2;
-coord_Y=3;
-dist_X=-ones(size(y'))*(coord_X-x);
-dist_Y=(coord_Y-y')*ones(size(x));
-dist=dist_X.^2+dist_Y.^2;
-%}
-computeDist=@(A,RSSI,n) 2^((A-RSSI)/(10*n));
-sigma=0.2;
 
 n=2;A=60;
-beacon_pos=[3,4; 8,2; 9,3; 7,2; 1,3.5];
-%c_1=[3,4];c_2=[8,2];c_3=[9,3]; c_4 = [7,2] ; c_5 = [1,3.5];
-position_wanted=[4,2];
-iPos(1)=find(x==position_wanted(1));
-iPos(2)=find(y==position_wanted(2));
+beacon_pos=[3,4; 8,2; 9,3; 7,2; 1, 3.5];
+position_real=[4,2];
+iPos(1)=find(x==position_real(1));
+iPos(2)=find(y==position_real(2));
 
 for i=1:size(beacon_pos,1)
    %figure();
@@ -41,7 +30,7 @@ for i=1:size(beacon_pos,1)
     %imagesc(m{i});
     %xticks(0:100:1000);xticklabels([0:1:10]);yticks(0:100:500);yticklabels([0:1:5]);
     clear dist_X dist_Y 
-    RSSI_vect(i)=m{i}(iPos(2),iPos(1));d(i)=computeDist(A,RSSI_vect(i),n_r(1));
+    RSSI_vect(i)=m{i}(iPos(2),iPos(1));d(i)=computeDist(A,RSSI_vect(i),n(1));
 end
 
 % maximum likelihood 
@@ -56,9 +45,10 @@ for i=1:(s-1)
 end
 
 position_LSM = inv(A' * A)* A' * b ;
-iPos(1)=find(x==position_wanted(1));
-iPos(2)=find(y==position_wanted(2));
+iPos(1)=find(x==position_real(1));
+iPos(2)=find(y==position_real(2));
 %% Uniform sampling
+%{
 beta=0.5;
 thick=1000;
 PSO_x=linspace(position_LSM(1)-beta,position_LSM(1)+beta,thick);
@@ -75,18 +65,18 @@ end
 
 [x_index,y_index]=find(f_mat==min(f_mat,[],'all'));
 position_OPT=[position_LSM(1)-beta+2*beta/thick*x_index;position_LSM(2)-beta+2*beta/thick*y_index];
-
+%}
 %% PSO
-f_i=@(r_pos,b_pos,d) (d-norm(r_pos-b_pos))^2;
 
-fitness = @(x) f_i(x,beacon_pos(1,:),d(1))+ ...
-                 f_i(x,beacon_pos(2,:),d(2))+ ...
-                 f_i(x,beacon_pos(3,:),d(3))+ ...
-                 f_i(x,beacon_pos(4,:),d(4))+ ...
-                 f_i(x,beacon_pos(5,:),d(5));
-            
-%(d(k)-norm([PSO_x(i),PSO_y(j)]-beacon_pos(k,:)))^2;
+beta=0.5;
+vect_fit=cell(1,3);
+for i=1:s
+    vect_fit{i}{1}=beacon_pos(i,:);
+    vect_fit{i}{2}=d(i);
+end
+
+fitness=@(pos) sum( cellfun( @(prova) ((prova{2}-norm(pos-prova{1}))^2) ,vect_fit));
 
 rng default  % For reproducibility
 nvars = 2;
-pos_PSO = particleswarm(fitness,nvars);
+position_PSO = particleswarm(fitness,nvars,[position_LSM(1)-beta,position_LSM(2)-beta],[position_LSM(1)+beta,position_LSM(2)+beta]);
