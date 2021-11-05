@@ -37,11 +37,14 @@ fitness=@(pos) sum( cellfun( @(arg)...
 nvars = 2;
 options = optimoptions('particleswarm');
 options.Display='off';
-options.InitialSwarmMatrix=position_pre;
+%options.InitialSwarmMatrix=position_pre;
 options.InertiaRange=[0.4,1];
-%options.SelfAdjustmentWeight=3;
-%options.SocialAdjustmentWeight=0.5;
-position = particleswarm(fitness,nvars,[position_pre(1)-beta,position_pre(2)-beta],[position_pre(1)+beta,position_pre(2)+beta],options);
+options.SelfAdjustmentWeight=2;
+options.SocialAdjustmentWeight=0.5;
+%[position_pre(1)-beta,position_pre(2)-beta],[position_pre(1)+beta,position_pre(2)+beta]
+lb=[0,0];
+up=[20,10];
+position = particleswarm(fitness,nvars,lb,up,options);
 
     if (print==1)
         figure()
