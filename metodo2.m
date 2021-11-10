@@ -1,43 +1,141 @@
 clear 
+tic
+%% MODEL
+space.x=0:0.01:20;
+space.y=0:0.01:10;
+[space.x_grid,space.y_grid]=meshgrid(space.x,space.y);
 
-RSSI=@(A,n,d) A-10*n*log10(d); 
-computeDist=@(A,RSSI,n) 10.^((A-RSSI)/(10*n));
 
-x=0:0.01:20;
-y=0:0.01:10;
+% formulas
+model.RSSI=@(A,n,d) A-10*n*log10(d); 
+model.computeDist=@(A,RSSI,n) 10.^((A-RSSI)./(10.*n));
+model.nvars = 2;
+model.chess_lenght=100;
 
-n=2;sigma=2;A=-60;
-beacon.position=[3,4; 8,2; 9,3; 7,2; 1, 3.5];
-position_real=[10,5];
-position=1;
-chess_lenght=100;
+% RSSI
+model.n=2;
+model.A=-50;
 
-%stop_times=[100:100:ntimes];
-%{
-position_LSM=zeros(ntimes,2);
-position_PSO=zeros(ntimes,2);
-position_OPT=zeros(ntimes,2);
-%}
-for i=1:size(beacon.position,1)
-    dist_X=(beacon.position(i,1)-x)'*ones(size(y));
-    dist_Y=ones(size(x))'*(beacon.position(i,2)-y);
-    beacon.dist{i}=sqrt(dist_X.^2+dist_Y.^2);
-    temp_x=mod(x,0.2);
-    temp_y=mod(y,0.2);
-    index_x=find(temp_x==0); %point to take RSSI
-    index_y=find(temp_y==0);
-    beacon.sampled_dist(:,:,i)=beacon.dist{i}(index_x,index_y);% z with array of distances
+% shadowing
+model.shadowing.mu=0;
+model.shadowing.sigma=4;
+
+% fading
+model.fading.mu=1;
+
+% noise
+model.noise.mu=0;
+model.noise.sigma=1;
+
+% PSO
+model.options = optimoptions('particleswarm');
+model.options.Display='off';
+model.options.InertiaRange=[0.4,1];
+model.options.SelfAdjustmentWeight=2;
+model.options.SocialAdjustmentWeight=0.5;
+%options.InitialSwarmMatrix=position_pre;
+
+%% BEACON
+beacon.position=[3.05,4.05; 8.05,2.05; 9.05,3.05; 7.05,2.05; 1.05, 3.55];
+beacon.used=[3 5];
+space.beacon_size=size(beacon.position,1);
+
+%%
+    measure.index_x=find(mod(space.x,1)==0); %point to take RSSI
+    measure.index_y=find(mod(space.y,1)==0);
+    [measure.grid_y,measure.grid_x]=meshgrid(space.y(measure.index_y),space.x(measure.index_x));
     
-    clear dist_X dist_Y temp_x temp_y
+for i=1:space.beacon_size
+    dist_X=(beacon.position(i,1)-space.x)'*ones(size(space.y));
+    dist_Y=ones(size(space.x))'*(beacon.position(i,2)-space.y);
+    beacon.dist(:,:,i)=sqrt(dist_X.^2+dist_Y.^2);
+    measure.sampled_dist(:,:,i)=beacon.dist(measure.index_x,measure.index_y,i);% z with array of distances
+    
+    clear dist_X dist_Y
 end
-shadowing=compute_shadowing(x,y,chess_lenght);
+[~,measure.order]=sort(measure.sampled_dist,3);
 
-ntimes=5;
+
+ntimes=20;
+distRSSI_temp=zeros(numel(measure.index_x),numel(measure.index_y),space.beacon_size,ntimes);
+shadowing=compute_shadowing(space,model);
 for i=1:ntimes
-    [fading,fading_mean]=compute_fading(x,y,chess_lenght,beacon.position);
-    dist_RSSI=compute_RSSI_dist(x,y,beacon.position,beacon.dist,shadowing,fading,position_real,RSSI,computeDist);    
+    fading=compute_fading(space,model); 
+    distRSSI_temp(:,:,:,i)=compute_distRSSI(beacon,measure,shadowing,fading,model,space);    
 end
 
+measure.distRSSI{1}=compute_distRSSI(beacon,measure,shadowing,zeros(size(fading)),model,space);    
+measure.distRSSI{2}=mean(distRSSI_temp,4);
+%{
+for i=1:numel(beacon.used)
+    measure.distRSSI_beacon{i}=measure.distRSSI(measure.order(:,:,1:beacon.used(i)));
+end
+%}
+%% LOCALIZATION
+
+position_LSM=cell(1,numel(measure.distRSSI));
+position_PSO=cell(1,numel(measure.distRSSI));
+
+for k=1:numel(measure.distRSSI)
+    position_LSM{k}=zeros(size(measure.distRSSI{1},1),size(measure.distRSSI{1},2),model.nvars);
+    position_PSO{k}=zeros(size(measure.distRSSI{1},1),size(measure.distRSSI{1},2),model.nvars);
+    for i=1:size(measure.distRSSI{k},1)
+        for j=1:size(measure.distRSSI{k},2)
+            position_LSM{k}(i,j,:)=leastSquaresMethod(beacon.position,measure.distRSSI{k}(i,j,:));
+            position_PSO{k}(i,j,:)=particleSwarmOptimizer(beacon.position,measure.distRSSI{k}(i,j,:),model);
+        end
+    end
+end
+
+T=toc;
+
+%% EVALUATION
+errors.LSM{1}=round(sqrt((position_LSM{1}(:,:,1)-measure.grid_x).^2+(position_LSM{1}(:,:,2)-measure.grid_y).^2),3);
+errors.PSO{1}=round(sqrt((position_LSM{1}(:,:,1)-measure.grid_x).^2+(position_LSM{1}(:,:,2)-measure.grid_y).^2),3);
+
+errors.LSM{2}=round(sqrt((position_LSM{2}(:,:,1)-measure.grid_x).^2+(position_LSM{2}(:,:,2)-measure.grid_y).^2),3);
+errors.PSO{2}=round(sqrt((position_LSM{2}(:,:,1)-measure.grid_x).^2+(position_LSM{2}(:,:,2)-measure.grid_y).^2),3);
+
+figure();
+
+subplot(2,2,1);
+imagesc(errors.LSM{1});
+subtitle('LSM with fading');
+
+subplot(2,2,2);
+imagesc(errors.PSO{1});
+subtitle('PSO with fading');
+
+subplot(2,2,3);
+imagesc(errors.LSM{2});
+subtitle('LSM without fading');
+
+subplot(2,2,4);
+imagesc(errors.PSO{2});
+subtitle('PSO without fading');
+
+title('Localization error');
+
+figure();
+subplot(2,2,1);
+histogram(errors.LSM{1});
+subtitle('LSM with fading');
+
+subplot(2,2,2);
+histogram(errors.PSO{1});
+subtitle('PSO with fading');
+
+histogram(errors.LSM{2});
+subplot(2,2,3);
+subtitle('LSM without fading');
+
+subplot(2,2,4);
+histogram(errors.PSO{2});
+subtitle('PSO without fading');
+    %errorx=position_LSM(:,:,1)-measure.grid_x;
+    %errory=position_LSM(:,:,2)-measure.grid_y;
+    
+%{
     position_LSM(i,:) = leastSquaresMethod(beacon.position,dist_RSSI);
     position_PSO(i,:)=particleSwarmOptimizer(beacon.position,dist_RSSI,position_LSM(i,:),0);
     position_OPT(i,:)=optimization_grid(beacon.position,dist_RSSI,position_LSM(i,:));
@@ -98,3 +196,4 @@ for i=1:k
     scatter(position_LSM(choice==i,1),position_LSM(choice==i,2),colors{i});
     hold on;
 end
+    %}
